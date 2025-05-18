@@ -1,0 +1,63 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.ticker import FuncFormatter
+import plotly.express as px
+#load data
+data = pd.read_csv(r'C:\Users\tunaf\Downloads\Most Streamed Spotify Songs 2024.csv', encoding='latin1')
+
+#clean numeric data an
+data['Spotify Streams'] = data['Spotify Streams'].replace({',': ''}, regex=True)
+data['Spotify Streams'] = pd.to_numeric(data['Spotify Streams'], errors = 'coerce')
+
+# Filter rows where 'Artist' is 'Drake' and 'Kendrick Lamar'
+drake_df = data[data['Artist'] == 'Drake']
+kendrick_df = data[data['Artist'] == 'Kendrick Lamar']
+
+#extract columns under 'Kendrick Lamar' and 'Drake'
+drake_streams = (drake_df[['Artist', 'Track', 'Spotify Streams']])
+kendrick_streams = (kendrick_df[['Artist', 'Track', 'Spotify Streams']])
+
+#Find top 10 Kendrick and Drake Songs by 'Spotify Streams' and combine
+def get_top_10(df, artist_name):
+    artist_df = df[df['Artist'] == artist_name][['Artist', 'Track', 'Spotify Streams', 'Release Date']]
+    return artist_df.nlargest(10, 'Spotify Streams')
+
+drake_top_10 = get_top_10(data, 'Drake')
+kendrick_top_10 = get_top_10(data, 'Kendrick Lamar')
+
+combined_top_10 = pd.concat([drake_top_10, kendrick_top_10])
+combined_top_10 = combined_top_10.sort_values('Spotify Streams', ascending=False)
+
+
+plt.figure(figsize=(12, 6))
+sns.barplot(data=combined_top_10, x='Track', y='Spotify Streams', hue='Artist')
+
+def billions_formatter(x, pos):
+    return '%1.1fB' % (x * 1e-9)
+
+plt.tight_layout()
+plt.xticks(rotation=65, ha='right')
+plt.title("Top 10 Kendrick Lamar and Drake Songs (All Time)")
+plt.xlabel("Song")
+plt.ylabel("Spotify Streams")
+
+#bar graph with top 10 songs from both artists that highlights songs made in 2024 or later
+combined_top_10['Release Date'] = pd.to_datetime(combined_top_10['Release Date'])
+
+date = '2024-01-01'
+
+filtered_date = combined_top_10[combined_top_10['Release Date'] >= date]
+
+filtered_graph = filtered_date[filtered_date['Track'].isin(combined_top_10['Track'])]
+
+plt.figure(figsize=(10,6))
+plt.bar(filtered_graph['Track'], filtered_graph['Spotify Streams'])
+
+plt.title('Top 10 Songs from Drake and Kendrick from 2024')
+plt.xlabel('Song')
+plt.ylabel('Spotify Streams')
+plt.tight_layout()
+plt.show()
+print(filtered_date['Track'])
