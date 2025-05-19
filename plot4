@@ -12,7 +12,7 @@ data['Spotify Streams'] = data['Spotify Streams'].replace({',': ''}, regex=True)
 data['Spotify Streams'] = pd.to_numeric(data['Spotify Streams'], errors = 'coerce')
 
 #filter by artists to find their top 3 songs
-artists = ['Drake', 'Bad Bunny', 'Billie Eilish', 'Karol G', 'Post Malone']
+artists = ['Drake', 'Kendrick Lamar']
 artists_df = data[data['Artist'].isin(artists)]
 
 #find streams for filtered df
