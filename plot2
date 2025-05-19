@@ -1,0 +1,40 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.ticker import FuncFormatter
+import plotly.express as px
+#load data
+data = pd.read_csv(r'C:\Users\tunaf\Downloads\Most Streamed Spotify Songs 2024.csv', encoding='latin1')
+
+data['All Time Rank'] = pd.to_numeric(data['All Time Rank'], errors = 'coerce')
+
+
+def count_top_songs(df, artist_column='Artist', song_column='Track', ranking_column='All Time Rank'):
+    top_songs = data[data[ranking_column].notna()]
+    artist_counts = top_songs[artist_column].value_counts()
+    artist_counts = artist_counts.head(15)
+    return artist_counts
+
+top_artist_counts = count_top_songs(data)
+
+plt.figure(figsize=(10, 8))
+plt.pie(top_artist_counts.values, labels=top_artist_counts.index, autopct='%1.0f%%', startangle=140)
+plt.title('Artists with most all time streamed songs')
+#plt.show()
+
+#plot that compares drake to kendrick
+Artists = ['Drake', 'Kendrick Lamar']
+filtered_data = data[data['Artist'].isin(Artists)]
+
+comparison = filtered_data.groupby('Artist').agg({
+    'Track': 'count',
+    'All Time Rank': ['mean', 'min']})
+
+comparison.columns = ['Total Songs', 'Avg Rank', 'Best Rank']
+comparison = comparison.sort_values(by='Total Songs', ascending=False)
+
+plt.figure(figsize=(10, 8))
+plt.pie(comparison['Total Songs'], labels=comparison.index, autopct='%1.0f%%', startangle=90)
+plt.title('Drake top songs vs Kendrick top songs')
+plt.show()
